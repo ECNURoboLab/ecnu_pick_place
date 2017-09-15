@@ -5,7 +5,7 @@
  *      Author: Martin Griesser
  */
 
-#include <uibk_planning_node/PlanningHelper.h>
+#include <ecnu_pick_place/PlanningHelper.h>
 
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>

@@ -30,10 +30,10 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
 )
-set(SOURCE_FILES src/ecnu_pick_place_node.cpp)
+set(SOURCE_FILES src/ecnu_pick_place_node.cpp src/ECNUPickPlace.cpp)
 
 add_library(planning_helper src/PlanningHelper.cpp)
 target_link_libraries(planning_helper ${catkin_INCLUDE_DIRS})
 
 add_executable(ecnu_pick_place ${SOURCE_FILES})
-target_link_libraries(ecnu_pick_place  ${catkin_LIBRARIES})
+target_link_libraries(ecnu_pick_place planning_helper ${catkin_LIBRARIES})
