@@ -35,8 +35,8 @@ namespace ecnu_pick_place{
     static const std::string SUPPORT_SUFACE_NAME = "base_link";
     static const double SUPPORT_SURFACE_HIGHT = 0.08;
 
-    static const double CYCLINDER_HEIGHT = 0.02;
-    static const double CYCLINDER_RADIUS = 0.02;
+    static const double CYCLINDER_HEIGHT = 0.001;
+    static const double CYCLINDER_RADIUS = 0.0005;
 
 
     class ECNUPickPlace {

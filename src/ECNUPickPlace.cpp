@@ -34,7 +34,7 @@ namespace ecnu_pick_place{
         planning_helper_->setAllowedPlanningTime(5);
         planning_helper_->setPlanningAttempts(5);
         planning_helper_->setPlanningGroupName("manipulator");
-        planning_helper_->setSupportSurfaceName("table");
+        planning_helper_->setSupportSurfaceName("table_plate_link");
 
         pub_attach_coll_obj_ = nh.advertise<AttachedCollisionObject>("attached_collision_object", 10);
         ROS_INFO("waiting for gpd adapter action to start ....");
@@ -134,13 +134,16 @@ namespace ecnu_pick_place{
         filtered_cloud_publisher::GpdAdapterGoal goal;
         filtered_cloud_publisher::GpdAdapterResultConstPtr res;
         grasp_ac_.sendGoal(goal);
-        grasp_ac_.waitForResult(ros::Duration(5));
-        actionlib::SimpleClientGoalState state = grasp_ac_.getState();
-        while (state != state.SUCCEEDED)
+        if(!grasp_ac_.waitForResult())
         {
-            ROS_INFO("Waiting for grasp pose server");
-            ros::Duration(0.5).sleep();
+            ROS_INFO_STREAM("Grasp action returned early");
         }
+        actionlib::SimpleClientGoalState state = grasp_ac_.getState();
+//        while (state != state.SUCCEEDED)
+//        {
+//            ROS_INFO("Waiting for grasp pose server");
+//            ros::Duration(0.5).sleep();
+//        }
         if(state == state.SUCCEEDED)
         {
             res = grasp_ac_.getResult();
@@ -155,10 +158,12 @@ namespace ecnu_pick_place{
     geometry_msgs::Pose ECNUPickPlace::getGoalPose()
     {
         geometry_msgs::Pose goal_pose;
-        goal_pose.position.x = 0.4;
-        goal_pose.position.y = 0.3;
-        goal_pose.position.z = CYCLINDER_HEIGHT/2;
-
+        goal_pose.position.x = 0.6;
+        goal_pose.position.y = 0.0;
+        goal_pose.position.z = 0.2;
+//        goal_pose.orientation.x = 0.86;
+//        goal_pose.orientation.y = 0.50;
+//        goal_pose.orientation.z = 0;
         goal_pose.orientation.w = 1;
         return goal_pose;
     }
@@ -242,7 +247,8 @@ namespace ecnu_pick_place{
             pose_stamped.pose = goal_pose;
 
             // Orientation
-            Eigen::Quaterniond quat(Eigen::AngleAxis<double>(double(angle), Eigen::Vector3d::UnitZ()));
+            Eigen::Quaterniond quat(Eigen::AngleAxis<double>(double(3.141592), Eigen::Vector3d::UnitY())
+                                    *Eigen::AngleAxis<double>(double(angle),Eigen::Vector3d::UnitZ()));
             pose_stamped.pose.orientation.x = quat.x();
             pose_stamped.pose.orientation.y = quat.y();
             pose_stamped.pose.orientation.z = quat.z();
@@ -256,7 +262,7 @@ namespace ecnu_pick_place{
             // Approach
             GripperTranslation gripper_approach;
             // gripper_approach.direction.header.stamp = ros::Time::now();
-            gripper_approach.desired_distance = 0.2; // The distance the origin of a robot link needs to travel
+            gripper_approach.desired_distance = 0.13; // The distance the origin of a robot link needs to travel
             gripper_approach.min_distance = 0.1;
             gripper_approach.direction.header.frame_id = BASE_LINK;
             gripper_approach.direction.vector.x = 0;
@@ -267,7 +273,7 @@ namespace ecnu_pick_place{
             // Retreat
             GripperTranslation gripper_retreat;
             // gripper_retreat.direction.header.stamp = ros::Time::now();
-            gripper_retreat.desired_distance = 0.2; // The distance the origin of a robot link needs to travel
+            gripper_retreat.desired_distance = 0.13; // The distance the origin of a robot link needs to travel
             gripper_retreat.min_distance = 0.1;
             gripper_retreat.direction.header.frame_id = EE_LINK;
             gripper_retreat.direction.vector.x = 0;
@@ -358,7 +364,7 @@ namespace ecnu_pick_place{
         Eigen::Affine3d tf_bottom_grasper;
 
         tf_bottom_grasper.setIdentity();
-        tf_bottom_grasper.translation() = Eigen::Vector3d(0,0,-0.13);
+        tf_bottom_grasper.translation() = Eigen::Vector3d(0,0,-0.10);
         tf::poseEigenToMsg(global_transform*tf_bottom_grasper,grasp_pose_msg.pose);
 
         moveit_msgs::Grasp res_grasp;
@@ -384,6 +390,7 @@ namespace ecnu_pick_place{
         res_grasp.post_grasp_retreat = gripper_retreat;
 
         grasps.push_back(res_grasp);
+
 
 
         ROS_INFO_STREAM_NAMED("pick_place", "Generated " << grasps.size() << " grasps.");
